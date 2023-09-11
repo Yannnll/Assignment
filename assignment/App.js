@@ -24,12 +24,12 @@ import 'react-native-gesture-handler'
 import PropTypes from 'prop-types'
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Icon from 'react-native-vector-icons/AntDesign';
-import io from 'socket.io-client';
 import AboutScreen from './wireless_task/screens/AboutScreen';
 import HomeScreen from './wireless_task/screens/HomeScreen';
 import BookingScreen from './wireless_task/screens/BookingScreen';
 import ConfirmScreen from './wireless_task/screens/ConfirmScreen';
 import ProfileScreen from './wireless_task/screens/ProfileScreen';
+import EditProfile from './wireless_task/screens/EditProfile';
 import SettingsScreen from './wireless_task/screens/SettingsScreen';
 import SignoutScreen from './wireless_task/screens/SignoutScreen';
 import LoginScreen from './wireless_task/screens/LoginScreen';
@@ -41,6 +41,10 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import {LogBox} from 'react-native';
 LogBox.ignoreLogs (['EventEmitter.removeListener']);
+LogBox.ignoreLogs([
+  'Non-serializable values were found in the navigation state',
+]);
+
 
 
 //const Tab = createBottomTabNavigator ();
@@ -144,7 +148,9 @@ class MyDrawerComponent extends Component {
             onPress={() => {
               Alert.alert("Logging out", "Are you sure you want to log out?",[{
                 text:"Yes",
-                onPress:()=>{this.props.navigation.navigate("LoginScreen")},
+                onPress:()=>{
+                  this.props.navigation.navigate("LoginScreen",{signout:true})
+                },
                 style:'default'
               },{
                 text: "No",
@@ -256,10 +262,9 @@ const DrawerNavigator=({route})=>{
               ),
         }} />
 
-
         <Drawer.Screen
             name="Profile"
-            component={ProfileScreen}
+            component={ProfileNav}
             initialParams={route.params}
             options={{
                 drawerIcon: ({ color }) => (
@@ -312,6 +317,16 @@ const DrawerNavigator=({route})=>{
     </Drawer.Navigator>
   )
 }
+
+const ProfileNav=({route})=>{
+  const Profile=createStackNavigator()
+  return(
+    <Profile.Navigator initialRouteName='ProfileScreen'>
+      <Profile.Screen name='ProfileScreen' component={ProfileScreen} initialParams={route.params} options={{headerTitle: 'Profile',headerShown:false}}/>
+      <Profile.Screen name='EditProfile' component={EditProfile} initialParams={route.params} options={{headerTitle: 'Edit Profile',headerShown:false}}/>
+    </Profile.Navigator>
+  )
+}
 export default class App extends Component {
   render () {
     return (
@@ -322,7 +337,6 @@ export default class App extends Component {
 
           <Stack.Screen name='Drawer' component={DrawerNavigator} options={{headerShown:false}}/>
           <Stack.Screen name='ConfirmScreen' component={ConfirmScreen} options={{ headerShown: true, title: 'Confirm Reservation' }} />
-          
         </Stack.Navigator>
       </NavigationContainer>
     );
